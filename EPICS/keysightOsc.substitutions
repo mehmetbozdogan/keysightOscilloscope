@@ -1,0 +1,17 @@
+# agilentOsc.substitutions
+# Template file for Keysight Oscilloscope
+# Mehmet Bozdogan 25/03/2018
+#
+# substitutions:
+# sys    - system
+# sec    - section
+# dev    - device
+# $(sys)-$(sec)-$(dev) - device port(devPort)
+#
+#
+################################################################################
+
+file keysight.template {
+    pattern { sys	sec	dev 	arrlen	}
+            { TEST	TEST	OSC01	500	}
+}

@@ -1,0 +1,86 @@
+Terminator = LF;
+ReadTimeout = 1000;
+WriteTimeout = 1000;
+PollPeriod = 100;
+ReplyTimeout = 10000;
+LockTimeout = 5000;
+ExtraInput = Ignore;
+	
+debug
+{
+	out "%s";
+	in "%39c";
+}
+
+trig
+{
+	out "SING";
+	wait 100;
+}
+
+init
+{
+	out "*CLS";
+	wait 1000;
+	out "*RST";
+	wait 1000;
+	out "ACQ:POIN 100";
+	wait 1000;
+	out "STOP";
+}
+
+# ACQ:POIN 100		: wave array size
+# ACQ:COUN 8		: 8 emasurement for averaging
+# ACQ:AVER 1		: averaging on
+autoScale
+{
+        out "*CLS";
+        wait 100;
+        out "*RST";
+        wait 100;
+	out "AUT";
+	wait 7000;
+	out "ACQ:POIN 100";
+	wait 1000;
+	out "ACQ:COUN 8";
+	wait 1000;
+	out "ACQ:AVER 1";
+	wait 1000;
+	out "MEAS:PHAS";
+	wait 1000;
+	out "STOP";
+}
+
+xIncrementGet
+{
+	out "WAV:XINC?";
+	in "%f";
+}
+
+measWav
+{
+	out "WAV:SOUR \$1";
+	out "WAV:DATA?";
+	separator = ",";
+	in "%f";
+}
+
+measVpp
+{
+	out ":MEAS:VPP? \$1";
+	in "%e";
+}
+
+measVrms
+{
+	out ":MEAS:VRMS? DISP,DC,\$1";
+	in "%e";
+}
+
+measPhas
+{
+	out ":MEAS:PHAS? \$1,\$2,RIS";
+	in "%e";
+	#out ":MEAS:PHAS? \$1,\$2,RIS";
+	#in "%8e%*{0|1|2|3|4}";
+}

@@ -1,0 +1,194 @@
+# keysightOsc.template
+# Template database for the Keysight Oscilloscope
+# Mehmet Bozdogan 25/03/2018
+#
+# substitutions:
+# sys    - system
+# sec    - section
+# dev    - device
+# port   - $(sys):$(sec):$(dev) device port
+#
+#
+################################################################################
+record(stringout, "$(sys):$(sec):$(dev):Dbg")
+{
+	field(DESC, "$(dev) debug")
+	field(DTYP, "stream")
+	field(OUT,  "@keysightOsc.proto debug $(sys):$(sec):$(dev)")
+}
+
+record(bo, "$(sys):$(sec):$(dev):Init")
+{
+        field(DESC, "$(dev) initialize")
+        field(DTYP, "stream")
+        field(OUT, "@keysightOsc.proto init $(sys):$(sec):$(dev)")
+	field(PINI, "YES")
+	field(FLNK, "$(sys):$(sec):$(dev):XAxisFill")
+}
+
+record(acalcout, "$(sys):$(sec):$(dev):XAxisFill")
+{
+        field(DESC, "$(dev) X axis fill array")
+        field(CALC, "IX")
+        field(OUT, "$(sys):$(sec):$(dev):XAxis")
+        field(NELM, "$(arrlen)")
+}
+
+record(seq, "$(sys):$(sec):$(dev):AutoScaleTrigOn")
+{
+	field(DLY1,"0")
+	field(DOL1,"1")
+	field(LNK1,"$(sys):$(sec):$(dev):TrigDis PP NMS")
+	field(DLY2,"1")
+	field(DOL2,"1")
+	field(LNK2,"$(sys):$(sec):$(dev):AutoScale PP NMS")
+}
+
+record(seq, "$(sys):$(sec):$(dev):AutoScaleTrigOff")
+{
+	field(DLY1,"0")
+	field(DOL1,"0")
+	field(LNK1,"$(sys):$(sec):$(dev):TrigDis PP NMS")
+}
+
+record(bo, "$(sys):$(sec):$(dev):TrigDis")
+{
+	field(VAL, "1")
+        field(ZNAM, "Active")
+        field(ONAM, "Passive")
+}
+
+record(bo, "$(sys):$(sec):$(dev):AutoScale")
+{
+        field(DESC, "$(dev) autoscale")
+        field(DTYP, "stream")
+        field(OUT, "@keysightOsc.proto autoScale $(sys):$(sec):$(dev)")
+	field(FLNK, "$(sys):$(sec):$(dev):XInc")
+}
+
+record(ai, "$(sys):$(sec):$(dev):XInc")
+{
+        field(DESC, "$(dev) X increment")
+        field(DTYP, "stream")
+        field(INP, "@keysightOsc.proto xIncrementGet $(sys):$(sec):$(dev)")
+	field(EGU, "Second")
+	field(FLNK, "$(sys):$(sec):$(dev):XCalc")
+}
+
+record(acalcout, "$(sys):$(sec):$(dev):XCalc")
+{
+        field(DESC, "$(dev) X calculate times")
+        field(INPA, "$(sys):$(sec):$(dev):XInc")
+        field(CALC, "A*IX")
+	field(NELM, "$(arrlen)")
+        field(OUT, "$(sys):$(sec):$(dev):XAxis PP")
+}
+
+record(waveform, "$(sys):$(sec):$(dev):XAxis")
+{
+        field(DESC, "$(dev) X axis array")
+        field(DTYP, "Soft Channel")
+        field(FTVL, "DOUBLE")
+        field(NELM, "$(arrlen)")
+        field(EGU, "Second")
+	field(FLNK, "$(sys):$(sec):$(dev):AutoScaleTrigOff")
+}
+
+record(bi, "$(sys):$(sec):$(dev):Trig")
+{
+        field(DESC, "$(dev) trig")
+        field(DTYP, "stream")
+	field(SDIS, "$(sys):$(sec):$(dev):TrigDis")
+        field(INP, "@keysightOsc.proto trig $(sys):$(sec):$(dev)")
+        field(SCAN, "1 second")
+	field(FLNK, "$(sys):$(sec):$(dev):Ch1")
+        field(DISS, "MAJOR")
+}
+
+record(waveform, "$(sys):$(sec):$(dev):Ch1")
+{
+	field(DESC, "$(dev) channel 1 measurement")
+	field(DTYP, "stream")
+	field(INP, "@keysightOsc.proto measWav(CHAN1) $(sys):$(sec):$(dev)")
+	field(FTVL, "DOUBLE")
+	field(NELM, "$(arrlen)")
+	field(FLNK, "$(sys):$(sec):$(dev):Ch1_Vrms")
+	field(EGU, "Volt")
+}
+
+record(ai, "$(sys):$(sec):$(dev):Ch1_Vrms")
+{
+	field(DESC, "$(dev) channel 1 Vrms measurment")
+	field(DTYP, "stream")
+	field(INP, "@keysightOsc.proto measVrms(CHAN1) $(sys):$(sec):$(dev)")
+	field(FLNK, "$(sys):$(sec):$(dev):Ch2")
+	field(EGU, "Volt")
+}
+
+record(waveform, "$(sys):$(sec):$(dev):Ch2")
+{
+        field(DESC, "$(dev) channel 2 measurement")
+        field(DTYP, "stream")
+        field(INP, "@keysightOsc.proto measWav(CHAN2) $(sys):$(sec):$(dev)")
+        field(FTVL, "DOUBLE")
+        field(NELM, "$(arrlen)")
+	field(FLNK, "$(sys):$(sec):$(dev):Ch2_Vrms")
+	field(EGU, "Volt")
+}
+
+record(ai, "$(sys):$(sec):$(dev):Ch2_Vrms")
+{
+	field(DESC, "$(dev) channel 2 Vrms measurment")
+	field(DTYP, "stream")
+	field(INP, "@keysightOsc.proto measVrms(CHAN2) $(sys):$(sec):$(dev)")
+	field(FLNK, "$(sys):$(sec):$(dev):Ch4_Ch3_PhasDiff")
+	field(EGU, "Volt")
+}
+
+record(ai, "$(sys):$(sec):$(dev):Ch4_Ch3_PhasDiff")
+{
+	field(DESC, "$(dev) ch 4 - ch 3 phase difference")
+	field(DTYP, "stream")
+	field(INP, "@keysightOsc.proto measPhas(CHAN4,CHAN3) $(sys):$(sec):$(dev)")
+	field(FLNK, "$(sys):$(sec):$(dev):Ch3")
+	field(EGU, "Degree")
+}
+
+record(waveform, "$(sys):$(sec):$(dev):Ch3")
+{
+        field(DESC, "$(dev) channel 3 measurement")
+        field(DTYP, "stream")
+        field(INP, "@keysightOsc.proto measWav(CHAN3) $(sys):$(sec):$(dev)")
+        field(FTVL, "DOUBLE")
+        field(NELM, "$(arrlen)")
+	field(FLNK, "$(sys):$(sec):$(dev):Ch3_Vpp")
+	field(EGU, "Volt")
+}
+
+record(ai, "$(sys):$(sec):$(dev):Ch3_Vpp")
+{
+	field(DESC, "$(dev) channel 3 Vpp measurment")
+	field(DTYP, "stream")
+	field(INP, "@keysightOsc.proto measVpp(CHAN3) $(sys):$(sec):$(dev)")
+	field(FLNK, "$(sys):$(sec):$(dev):Ch4")
+	field(EGU, "Volt")
+}
+
+record(waveform, "$(sys):$(sec):$(dev):Ch4")
+{
+        field(DESC, "$(dev) channel 4 measurement")
+        field(DTYP, "stream")
+        field(INP, "@keysightOsc.proto measWav(CHAN4) $(sys):$(sec):$(dev)")
+        field(FTVL, "DOUBLE")
+        field(NELM, "$(arrlen)")
+	field(FLNK, "$(sys):$(sec):$(dev):Ch4_Vpp")
+	field(EGU, "Volt")
+}
+
+record(ai, "$(sys):$(sec):$(dev):Ch4_Vpp")
+{
+	field(DESC, "$(dev) channel 4 Vpp measurment")
+	field(DTYP, "stream")
+	field(INP, "@keysightOsc.proto measVpp(CHAN4) $(sys):$(sec):$(dev)")
+	field(EGU, "Volt")
+}
